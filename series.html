@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Series - CinemaStream</title>
+    <link rel="stylesheet" href="series.css">
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <h1 class="nav-logo">CinemaStream</h1>
+                <ul class="nav-menu">
+                    <li><a href="home.html">Home</a></li>
+                    <li><a href="upcoming.html">Upcoming</a></li>
+                    <li><a href="series.html" class="active">Series</a></li>
+                    <li><a href="kids.html">Kids</a></li>
+                    <li><a href="ai.html">AI Movie Finder</a></li>
+                    <li><a href="ai-poster.html">AI Poster Generate</a></li>
+                </ul>
+            </div>
+            <div class="nav-right">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search series...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="profile-menu" onclick="toggleProfileMenu()">
+                    <img id="navProfilePic" src="" alt="Profile">
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <div class="profile-info">
+                            <img id="dropdownProfilePic" src="" alt="Profile">
+                            <span id="username"></span>
+                            <span id="userEmail"></span>
+                        </div>
+                        <a href="#" onclick="logout()">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="series-hero">
+        <div class="hero-slider" id="heroSlider">
+            <!-- Dynamic content will be added here -->
+        </div>
+        <div class="hero-overlay"></div>
+    </section>
+
+    <!-- Genre Filter -->
+    <section class="genre-filter">
+        <h2>Browse by Genre</h2>
+        <div class="genre-tags">
+            <button class="genre-btn active" onclick="filterByGenre('all')">All</button>
+            <button class="genre-btn" onclick="filterByGenre(18)">Drama</button>
+            <button class="genre-btn" onclick="filterByGenre(35)">Comedy</button>
+            <button class="genre-btn" onclick="filterByGenre(80)">Crime</button>
+            <button class="genre-btn" onclick="filterByGenre(10765)">Sci-Fi</button>
+            <button class="genre-btn" onclick="filterByGenre(9648)">Mystery</button>
+            <button class="genre-btn" onclick="filterByGenre(10759)">Action</button>
+        </div>
+    </section>
+
+    <!-- Trending Series -->
+    <section class="series-section">
+        <h2 class="section-title">Trending Now</h2>
+        <div class="series-grid" id="trendingSeries"></div>
+    </section>
+
+    <!-- Popular Series -->
+    <section class="series-section">
+        <h2 class="section-title">Popular Series</h2>
+        <div class="series-grid" id="popularSeries"></div>
+    </section>
+
+    <!-- Top Rated Series -->
+    <section class="series-section">
+        <h2 class="section-title">Top Rated</h2>
+        <div class="series-grid" id="topRatedSeries"></div>
+    </section>
+
+    <!-- Netflix Originals -->
+    <section class="series-section">
+        <h2 class="section-title">Netflix Originals</h2>
+        <div class="series-grid" id="netflixSeries"></div>
+    </section>
+
+    <!-- Series Details Modal -->
+    <div class="series-modal" id="seriesModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamic content will be added here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Player Modal -->
+    <div class="video-modal" id="videoModal">
+        <div class="video-container">
+            <span class="close-video" onclick="closeVideo()">&times;</span>
+            <div id="player"></div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <!-- YouTube API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    
+    <!-- Scripts -->
+    <script src="api.js"></script>
+    <script src="series.js"></script>
+</body>
+</html>

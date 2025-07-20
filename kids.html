@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kids - CinemaStream</title>
+    <link rel="stylesheet" href="kids.css">
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <h1 class="nav-logo">FLIQX Kids</h1>
+                <ul class="nav-menu">
+                    <li><a href="home.html">Home</a></li>
+                    <li><a href="upcoming.html">Upcoming</a></li>
+                    <li><a href="series.html">Series</a></li>
+                    <li><a href="kids.html" class="active">Kids</a></li>
+                    <li><a href="ai.html">AI Movie Finder</a></li>
+                    <li><a href="ai-poster.html">AI Poster Generate</a></li>
+                    <li><a href="http://localhost:5173/">Story Narrator</a></li>
+                </ul>
+            </div>
+            <div class="nav-right">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search kids movies...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="profile-menu" onclick="toggleProfileMenu()">
+                    <img id="navProfilePic" src="" alt="Profile">
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <div class="profile-info">
+                            <img id="dropdownProfilePic" src="" alt="Profile">
+                            <span id="username"></span>
+                            <span id="userEmail"></span>
+                        </div>
+                        <a href="#" onclick="logout()">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Kids Hero Section -->
+    <section class="kids-hero">
+        <div class="hero-content">
+            <h1>Kids Zone</h1>
+            <p>Safe and fun movies for the whole family!</p>
+        </div>
+        <div class="hero-characters">
+            <div class="character"></div>
+            <div class="character"></div>
+            <div class="character"></div>
+        </div>
+    </section>
+
+    <!-- Age Categories -->
+    <section class="age-categories">
+        <div class="category-card" onclick="filterByAge('all')">
+            <i class="fas fa-star"></i>
+            <h3>All Ages</h3>
+        </div>
+        <div class="category-card" onclick="filterByAge('preschool')">
+            <i class="fas fa-baby"></i>
+            <h3>Preschool</h3>
+        </div>
+        <div class="category-card" onclick="filterByAge('elementary')">
+            <i class="fas fa-child"></i>
+            <h3>6-8 Years</h3>
+        </div>
+        <div class="category-card" onclick="filterByAge('tweens')">
+            <i class="fas fa-user-friends"></i>
+            <h3>9-12 Years</h3>
+        </div>
+    </section>
+
+    <!-- Popular Kids Movies -->
+    <section class="movie-section">
+        <h2 class="section-title">Popular Kids Movies</h2>
+        <div class="movie-carousel" id="popularKidsMovies"></div>
+    </section>
+
+    <!-- Animated Adventures -->
+    <section class="movie-section">
+        <h2 class="section-title">Animated Adventures</h2>
+        <div class="movie-carousel" id="animatedMovies"></div>
+    </section>
+
+    <!-- Disney Collection -->
+    <section class="movie-section">
+        <h2 class="section-title">Disney Magic</h2>
+        <div class="movie-carousel" id="disneyMovies"></div>
+    </section>
+
+    <!-- Educational Movies -->
+    <section class="movie-section">
+        <h2 class="section-title">Learn & Play</h2>
+        <div class="movie-carousel" id="educationalMovies"></div>
+    </section>
+
+    <!-- Video Player Modal -->
+    <div class="video-modal" id="videoModal">
+        <div class="video-container">
+            <span class="close-video" onclick="closeVideo()">&times;</span>
+            <div id="player"></div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <!-- YouTube API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    
+    <!-- Scripts -->
+    <script src="api.js"></script>
+    <script src="kids.js"></script>
+</body>
+</html>

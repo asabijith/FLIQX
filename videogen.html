@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Video Generator - Hugging Face & Local Models</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tab.active {
+            color: #667eea;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .model-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #856404;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #155724;
+        }
+
+        .input-section {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            background: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            min-height: 120px;
+            resize: vertical;
+            font-family: inherit;
+            background: #f9f9f9;
+            transition: all 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            margin-top: 30px;
+            text-align: center;
+            display: none;
+        }
+
+        .result.active {
+            display: block;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px solid #fcc;
+            display: none;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        .info-box {
+            background: #e8f4f8;
+            border: 1px solid #b8e0f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #0c5460;
+        }
+
+        .setup-guide {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .setup-guide h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .setup-guide ol {
+            padding-left: 20px;
+        }
+
+        .setup-guide li {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .download-btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .example-prompt {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-style: italic;
+            border-left: 4px solid #667eea;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .feature-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
+        }
+
+        .feature-item strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+
+            .feature-list {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Video Generator Hub</h1>
+        <p class="subtitle">Generate videos using cloud APIs or powerful local models</p>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('cloud')">Cloud Generation</button>
+            <button class="tab" onclick="switchTab('local')">Local Models</button>
+            <button class="tab" onclick="switchTab('wan14b')">Wan14BT2VFusioniX</button>
+        </div>
+
+        <!-- Cloud Generation Tab -->
+        <div id="cloud-tab" class="tab-content active">
+            <div class="warning-box">
+                <strong>⚠️ PRO Subscription Required for Video</strong>
+                <p style="margin-top: 10px;">Text-to-video through Hugging Face Inference Providers requires a PRO subscription ($9/month). Free users can generate images or use the local models.</p>
+            </div>
+
+            <div class="input-section">
+                <label for="apiKey">Hugging Face API Key:</label>
+                <input type="password" id="apiKey" placeholder="hf_xxxxxxxxxxxxxxxxxxxxx">
+                <p style="color: #666; font-size: 0.9em; margin-top: 5px;">
+                    Get your API key from <a href="https://huggingface.co/settings/tokens" target="_blank">Hugging Face</a>
+                </p>
+            </div>
+
+            <div class="input-section">
+                <label for="cloudMethod">Generation Method:</label>
+                <select id="cloudMethod">
+                    <option value="image">Generate Image (Free)</option>
+                    <option value="video-pro">Generate Video (PRO only)</option>
+                </select>
+            </div>
+
+            <div class="input-section">
+                <label for="cloudPrompt">Description:</label>
+                <textarea id="cloudPrompt" placeholder="Describe what you want to generate..."></textarea>
+            </div>
+
+            <button onclick="generateCloud()">Generate</button>
+
+            <div class="loading" id="cloudLoading">
+                <div class="spinner"></div>
+                <p>Generating... This may take a moment.</p>
+            </div>
+
+            <div class="error" id="cloudError"></div>
+            <div class="result" id="cloudResult"></div>
+        </div>
+
+        <!-- Local Models Tab -->
+        <div id="local-tab" class="tab-content">
+            <div class="success-box">
+                <strong>✨ Run Powerful Models Locally</strong>
+                <p style="margin-top: 10px;">These models run on your own hardware, giving you full control and no usage limits.</p>
+            </div>
+
+            <div class="info-box">
+                <strong>Popular Local Text-to-Video Models:</strong>
+                <ul style="margin-top: 10px; margin-left: 20px;">
+                    <li><strong>ModelScope</strong> - 1.7B parameters, good balance of quality/speed</li>
+                    <li><strong>Zeroscope V2</strong> - Optimized for consumer GPUs</li>
+                    <li><strong>AnimateDiff</strong> - Great for animated styles</li>
+                    <li><strong>Wan14BT2VFusioniX</strong> - High quality, 14B parameters (see dedicated tab)</li>
+                </ul>
+            </div>
+
+            <div class="setup-guide">
+                <h3>Quick Setup Guide:</h3>
+                <ol>
+                    <li>
+                        <strong>Install Python & Dependencies:</strong>
+                        <div class="code-block">
+pip install diffusers transformers accelerate torch xformers
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Run ModelScope Example:</strong>
+                        <div class="code-block">
+import torch
+from diffusers import DiffusionPipeline
+
+pipe = DiffusionPipeline.from_pretrained(
+    "damo-vilab/text-to-video-ms-1.7b", 
+    torch_dtype=torch.float16
+)
+pipe = pipe.to("cuda")
+
+prompt = "A serene beach at sunset"
+video_frames = pipe(prompt, num_inference_steps=25).frames
+# Save frames as video...
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Hardware Requirements:</strong>
+                        <ul style="margin-top: 5px; margin-left: 20px;">
+                            <li>GPU with 8-16GB VRAM (depending on model)</li>
+                            <li>CUDA-compatible NVIDIA GPU recommended</li>
+                            <li>16-32GB system RAM</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="https://github.com/huggingface/diffusers" target="_blank" class="download-btn">
+                    View Diffusers Documentation →
+                </a>
+            </div>
+        </div>
+
+        <!-- Wan14BT2VFusioniX Tab -->
+        <div id="wan14b-tab" class="tab-content">
+            <div class="model-badge">NEW: Advanced 14B Model</div>
+            
+            <div class="success-box">
+                <strong>🚀 Wan14BT2VFusioniX - State-of-the-Art Local Video Generation</strong>
+                <p style="margin-top: 10px;">A powerful 14B parameter model that combines multiple research-grade components for cinematic quality video generation.</p>
+            </div>
+
+            <div class="feature-list">
+                <div class="feature-item">
+                    <strong>Fast Generation</strong>
+                    Only 8-10 steps needed for great results
+                </div>
+                <div class="feature-item">
+                    <strong>High Quality</strong>
+                    14B parameters with advanced motion modeling
+                </div>
+                <div class="feature-item">
+                    <strong>Multiple Formats</strong>
+                    Available in fp8, fp16, and GGUF formats
+                </div>
+                <div class="feature-item">
+                    <strong>ComfyUI Optimized</strong>
+                    Best results with provided workflows
+                </div>
+            </div>
+
+            <div class="example-prompt">
+                <strong>Example Prompt:</strong><br>
+                "Tight close-up of her smiling lips and sparkling eyes, catching golden hour sunlight. She wears a white sundress with floral prints and a wide-brimmed straw hat. Camera pulls back in a dolly motion, revealing her twirling under a cherry blossom tree. Petals flutter in the air, casting playful shadows."
+            </div>
+
+            <div class="setup-guide">
+                <h3>Setup Instructions for Wan14BT2VFusioniX:</h3>
+                <ol>
+                    <li>
+                        <strong>Install ComfyUI:</strong>
+                        <div class="code-block">
+git clone https://github.com/comfyanonymous/ComfyUI.git
+cd ComfyUI
+pip install -r requirements.txt
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Download the Model:</strong>
+                        <p>Choose one of these versions from <a href="https://huggingface.co/vrgamedevgirl84/Wan14BT2VFusioniX/tree/main" target="_blank">Hugging Face</a>:</p>
+                        <ul style="margin: 10px 0 10px 20px;">
+                            <li><code>Wan14BT2VFusioniX_fp16.safetensors</code> (28.6 GB) - Best quality</li>
+                            <li><code>Wan14BT2VFusioniX_fp8.safetensors</code> - Smaller, faster</li>
+                            <li><code>Wan14Bi2vFusioniX.safetensors</code> (16.4 GB) - Image-to-video</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>Place Model Files:</strong>
+                        <p>Put the downloaded .safetensors file in:</p>
+                        <div class="code-block">ComfyUI/models/diffusion_models/</div>
+                    </li>
+                    <li>
+                        <strong>Run ComfyUI:</strong>
+                        <div class="code-block">
+python main.py --listen
+# Open browser to http://localhost:8188
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Load Workflow:</strong>
+                        <p>Use the workflows provided on the model page for best results</p>
+                    </li>
+                </ol>
+
+                <div class="info-box" style="margin-top: 20px;">
+                    <strong>Hardware Requirements:</strong>
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li>GPU: 16GB+ VRAM recommended (24GB ideal)</li>
+                        <li>RAM: 32GB+ system memory</li>
+                        <li>Storage: 30-40GB for model files</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <strong>Model Components:</strong>
+                    <p style="margin-top: 10px;">This model merges:</p>
+                    <ul style="margin-top: 5px; margin-left: 20px;">
+                        <li>CausVid - Improved motion modeling</li>
+                        <li>AccVideo - Temporal alignment</li>
+                        <li>MoviiGen1.1 - Cinematic effects</li>
+                        <li>Custom detail enhancer LoRAs</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="https://huggingface.co/vrgamedevgirl84/Wan14BT2VFusioniX" target="_blank" class="download-btn" style="margin-right: 10px;">
+                    View on Hugging Face →
+                </a>
+                <a href="https://github.com/comfyanonymous/ComfyUI" target="_blank" class="download-btn" style="background: #764ba2;">
+                    Get ComfyUI →
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Hugging Face Inference Client -->
+    <script type="module">
+        import { InferenceClient } from 'https://cdn.jsdelivr.net/npm/@huggingface/inference@latest/+esm';
+
+        window.switchTab = function(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+
+        window.generateCloud = async function() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const prompt = document.getElementById('cloudPrompt').value.trim();
+            const method = document.getElementById('cloudMethod').value;
+            const loading = document.getElementById('cloudLoading');
+            const error = document.getElementById('cloudError');
+            const result = document.getElementById('cloudResult');
+
+            // Clear previous results
+            error.classList.remove('active');
+            result.classList.remove('active');
+            error.textContent = '';
+            result.innerHTML = '';
+
+            // Validate inputs
+            if (!apiKey) {
+                showError('cloudError', 'Please enter your Hugging Face API key');
+                return;
+            }
+
+            if (!prompt) {
+                showError('cloudError', 'Please enter a description');
+                return;
+            }
+
+            // Show loading
+            loading.classList.add('active');
+
+            try {
+                if (method === 'image') {
+                    // Generate image (free tier)
+                    const response = await fetch(
+                        'https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1',
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${apiKey}`,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                inputs: prompt,
+                                options: {
+                                    wait_for_model: true
+                                }
+                            })
+                        }
+                    );
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                    }
+
+                    const imageBlob = await response.blob();
+                    const imageUrl = URL.createObjectURL(imageBlob);
+                    
+                    result.innerHTML = `
+                        <h3>Generated Image</h3>
+                        <img src="${imageUrl}" style="width: 100%; max-width: 600px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);">
+                        <br>
+                        <a href="${imageUrl}" download="generated-image.png" class="download-btn">Download Image</a>
+                    `;
+                    result.classList.add('active');
+                    
+                } else if (method === 'video-pro') {
+                    // Try video generation (PRO only)
+                    const client = new InferenceClient(apiKey);
+                    
+                    try {
+                        const videoBlob = await client.textToVideo({
+                            provider: "fal-ai",
+                            model: "tencent/HunyuanVideo",
+                            inputs: prompt,
+                        });
+
+                        const videoUrl = URL.createObjectURL(videoBlob);
+                        result.innerHTML = `
+                            <h3>Generated Video</h3>
+                            <video controls style="width: 100%; max-width: 600px; border-radius: 10px;">
+                                <source src="${videoUrl}" type="video/mp4">
+                            </video>
+                            <br>
+                            <a href="${videoUrl}" download="generated-video.mp4" class="download-btn">Download Video</a>
+                        `;
+                        result.classList.add('active');
+                    } catch (err) {
+                        if (err.message.includes('free credits')) {
+                            throw new Error('Video generation requires a Hugging Face PRO subscription ($9/month). Try generating an image instead or use the local models.');
+                        }
+                        throw err;
+                    }
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                showError('cloudError', err.message || 'An error occurred during generation');
+            } finally {
+                loading.classList.remove('active');
+            }
+        }
+
+        window.showError = function(elementId, message) {
+            const error = document.getElementById(elementId);
+            error.textContent = message;
+            error.classList.add('active');
+        }
+
+        // Store API key
+        document.getElementById('apiKey').addEventListener('change', function() {
+            localStorage.setItem('hf_api_key', this.value);
+        });
+
+        // Load stored API key
+        window.addEventListener('DOMContentLoaded', function() {
+            const storedKey = localStorage.getItem('hf_api_key');
+            if (storedKey) {
+                document.getElementById('apiKey').value = storedKey;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CinemaStream - Home</title>
+    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="nav-logo">FLIQX</div>
+                <ul class="nav-menu">
+                    <li><a href="home.html" class="active">Home</a></li>
+                    <li><a href="upcoming.html">Upcoming</a></li>
+                    <li><a href="series.html">Series</a></li>
+                    <li><a href="kids.html">Kids</a></li>
+                    <li><a href="ai.html">AI Movie Finder</a></li>
+                    <li><a href="ai-poster.html">AI Poster Generate</a></li>
+                    <li><a href="https://in.bookmyshow.com/" class="booknow">Book now</a></li>
+                </ul>
+            </div>
+            <div class="nav-right">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search movies...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="profile-menu" onclick="api.toggleProfileMenu()">
+                    <img id="navProfilePic" src="https://via.placeholder.com/150?text=User" alt="Profile">
+                    <div id="profileDropdown" class="profile-dropdown">
+                        <div class="profile-info">
+                            <img id="dropdownProfilePic" src="https://via.placeholder.com/150?text=User" alt="Profile">
+                            <span id="username">User</span>
+                            <span id="userEmail">email@example.com</span>
+                        </div>
+                        <a href="#" onclick="api.logout()">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero-slider">
+        <div class="slider-container"></div>
+        <div class="slider-controls">
+            <button class="slider-prev" onclick="changeSlide(-1)">‹</button>
+            <button class="slider-next" onclick="changeSlide(1)">›</button>
+        </div>
+        <div class="slider-dots"></div>
+    </section>
+
+    <div class="video-modal">
+        <div class="video-container">
+            <div id="player"></div>
+            <i class="fas fa-times close-video" onclick="api.closeVideo()"></i>
+        </div>
+    </div>
+
+    <section class="movie-section">
+        <h2 class="section-title">Trending Now</h2>
+        <div class="movie-carousel" id="trendingMovies"></div>
+    </section>
+
+    <section class="movie-section">
+        <h2 class="section-title">Popular Movies</h2>
+        <div class="movie-carousel" id="popularMovies"></div>
+    </section>
+
+    <section class="movie-section">
+        <h2 class="section-title">Top Rated</h2>
+        <div class="movie-carousel" id="topRatedMovies"></div>
+    </section>
+
+    <section class="movie-section">
+        <h2 class="section-title">Action & Adventure</h2>
+        <div class="movie-carousel" id="actionMovies"></div>
+    </section>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="api.js"></script>
+    <script src="home.js"></script>
+</body>
+</html>

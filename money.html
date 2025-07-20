@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Payment System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status-card {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .status-connected {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .status-disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .admin-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .admin-panel h2 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: white;
+        }
+
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            background: white;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+
+        .payment-display {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .amount-display {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .currency-symbol {
+            color: #4CAF50;
+        }
+
+        .qr-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 2px dashed #ddd;
+        }
+
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .qr-placeholder {
+            width: 300px;
+            height: 300px;
+            background: #e9ecef;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 1.2rem;
+        }
+
+        .payment-details {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .payment-details h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .detail-value {
+            color: #2c3e50;
+            word-break: break-all;
+        }
+
+        /* Success Popup Styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .success-popup {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            animation: popupAppear 0.3s ease-out;
+        }
+
+        @keyframes popupAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .success-popup h2 {
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+        }
+
+        .success-popup p {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .close-btn {
+            background: white;
+            color: #4CAF50;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            border: 1px solid #c3e6cb;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .amount-display {
+                font-size: 2.5rem;
+            }
+
+            .qr-placeholder {
+                width: 250px;
+                height: 250px;
+            }
+        }
+        /* Bitcoin Icon SVG (embedded for direct use) */
+        .bitcoin-icons--bitcoin-filled {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230066ff' fill-rule='evenodd' d='M13.425 6.432c1.983.19 3.538.778 3.71 2.528c.117 1.276-.438 2.035-1.355 2.463c1.481.359 2.382 1.202 2.196 3.072c-.227 2.343-2.035 2.952-4.62 3.08l.004 2.42l-1.522.002l-.004-2.42q-.25-.002-.519.003c-.238.003-.484.006-.731-.001l.004 2.42l-1.52.001l-.004-2.42l-3.044-.058l.256-1.768s1.15.024 1.129.012c.423-.002.549-.293.58-.485l-.008-3.878l.012-2.76c-.046-.288-.248-.634-.87-.644c.033-.03-1.115.001-1.115.001L6 6.38l3.12-.005l-.004-2.37l1.571-.002l.004 2.37c.304-.008.603-.005.906-.003l.3.002l-.005-2.37L13.422 4zm-2.92 4.46l.076.002c.926.04 3.67.155 3.673-1.457c-.004-1.532-2.339-1.482-3.423-1.46q-.195.006-.327.005zm.129 4.75l-.134-.005v-2.91q.146.002.359-.002c1.282-.015 4.145-.05 4.132 1.494c.014 1.597-3.218 1.468-4.357 1.423' clip-rule='evenodd'/%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💳 Dynamic Payment System</h1>
+            <p>Firebase-powered QR payment system with real-time updates</p>
+        </div>
+
+        <div id="connectionStatus" class="status-card status-disconnected">
+            🔴 Not Connected to Firebase
+        </div>
+
+        <div class="admin-panel">
+            <h2>🔧 Admin Control Panel</h2>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="firebaseConfig">Firebase Configuration (JSON)</label>
+                    <textarea id="firebaseConfig" rows="4" placeholder='{"apiKey":"your-key","authDomain":"...","databaseURL":"..."}'></textarea>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="upiId">UPI ID</label>
+                    <input type="text" id="upiId" placeholder="yourname@paytm" value="9876543210@paytm">
+                </div>
+                <div class="form-group">
+                    <label for="merchantName">Merchant/Store Name</label>
+                    <input type="text" id="merchantName" placeholder="Your Business Name" value="My Digital Store">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="currency">Currency</label>
+                    <select id="currency">
+                        <option value="INR">INR (₹)</option>
+                        <option value="USD">USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="amount">Payment Amount</label>
+                    <input type="number" id="amount" placeholder="100.00" step="0.01" min="1">
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn" onclick="loadConfig()">🚀 Load Config</button>
+                <button class="btn btn-secondary" onclick="connectFirebase()">🔗 Connect Firebase</button>
+                <button class="btn" onclick="updatePayment()">💰 Update Payment</button>
+                <button class="btn" onclick="generateQR()">📱 Generate QR</button>
+                <button class="btn btn-danger" onclick="simulatePayment()">✅ Test Payment</button>
+            </div>
+        </div>
+
+        <div class="payment-display">
+            <div class="amount-display">
+                <span class="currency-symbol">₹</span><span id="displayAmount">0.00</span>
+            </div>
+            
+            <div class="qr-container">
+                <div id="qrcode">
+                    <div class="qr-placeholder">
+                        📱 QR Code will appear here
+                    </div>
+                </div>
+                <p><strong>Scan with Paytm/PhonePe/GPay to pay</strong></p>
+            </div>
+
+            <div class="payment-details">
+                <h3>💳 Payment Information</h3>
+                <div class="detail-row">
+                    <span class="detail-label">UPI ID:</span>
+                    <span class="detail-value" id="infoUpiId">Not set</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Merchant:</span>
+                    <span class="detail-value" id="infoMerchant">Not set</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Amount:</span>
+                    <span class="detail-value" id="infoAmount">₹0.00</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Transaction ID:</span>
+                    <span class="detail-value" id="infoTransactionId">Not generated</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value" id="infoStatus">Ready</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
+    
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+
+    <script>
+        // Global variables
+        let firebaseApp = null;
+        let database = null;
+        let currentAmount = 0;
+        let currentUPI = '';
+        let currentMerchant = '';
+        let currentCurrency = 'INR';
+        let currentTransactionId = null;
+
+        // Currency symbols
+        const currencySymbols = {
+            'INR': '₹',
+            'USD': '$',
+            'EUR': '€'
+        };
+
+        // Load Firebase configuration
+        function loadConfig() {
+            const config = {
+                "apiKey": "AIzaSyAA9k_wUy8W4DUGGC59XKLf1SSA0kJpflk",
+                "authDomain": "form-e9a10.firebaseapp.com",
+                "databaseURL": "https://form-e9a10-default-rtdb.firebaseio.com",
+                "projectId": "form-e9a10",
+                "storageBucket": "form-e9a10.firebasestorage.app",
+                "messagingSenderId": "522860381687",
+                "appId": "1:522860381687:web:10def6869ab957940adaf2",
+                "measurementId": "G-ZHT6HE42RM"
+            };
+
+            document.getElementById('firebaseConfig').value = JSON.stringify(config, null, 2);
+            document.getElementById('upiId').value = '9876543210@paytm';
+            document.getElementById('merchantName').value = 'My Digital Store';
+            document.getElementById('amount').value = '100';
+            
+            showSuccess('Configuration loaded successfully!');
+        }
+
+        // Connect to Firebase
+        function connectFirebase() {
+            try {
+                const configText = document.getElementById('firebaseConfig').value.trim();
+                
+                if (!configText) {
+                    showError('Please enter Firebase configuration');
+                    return;
+                }
+
+                const firebaseConfig = JSON.parse(configText);
+                
+                // Destroy existing app if any
+                if (firebase.apps.length > 0) {
+                    firebase.app().delete().then(() => {
+                        initializeFirebase(firebaseConfig);
+                    });
+                } else {
+                    initializeFirebase(firebaseConfig);
+                }
+                
+            } catch (error) {
+                showError('Invalid Firebase configuration: ' + error.message);
+            }
+        }
+
+        // Initialize Firebase
+        function initializeFirebase(config) {
+            try {
+                firebaseApp = firebase.initializeApp(config);
+                database = firebase.database();
+                
+                // Test connection
+                database.ref('.info/connected').on('value', (snapshot) => {
+                    const connected = snapshot.val();
+                    updateConnectionStatus(connected);
+                });
+
+                // Listen for real-time updates
+                setupRealtimeListeners();
+                
+                showSuccess('Firebase connected successfully!');
+                
+            } catch (error) {
+                showError('Firebase initialization failed: ' + error.message);
+            }
+        }
+
+        // Setup real-time listeners
+        function setupRealtimeListeners() {
+            if (!database) return;
+
+            // Listen for amount changes
+            database.ref('paymentAmount').on('value', (snapshot) => {
+                const amount = snapshot.val();
+                if (amount !== null && amount !== undefined) {
+                    currentAmount = parseFloat(amount);
+                    document.getElementById('amount').value = currentAmount;
+                    updateDisplay();
+                }
+            });
+
+            // Listen for UPI changes
+            database.ref('upiId').on('value', (snapshot) => {
+                const upi = snapshot.val();
+                if (upi !== null && upi !== undefined) {
+                    currentUPI = upi;
+                    document.getElementById('upiId').value = upi;
+                    updateDisplay();
+                }
+            });
+
+            // Listen for merchant changes
+            database.ref('merchantName').on('value', (snapshot) => {
+                const merchant = snapshot.val();
+                if (merchant !== null && merchant !== undefined) {
+                    currentMerchant = merchant;
+                    document.getElementById('merchantName').value = merchant;
+                    updateDisplay();
+                }
+            });
+
+            // Listen for currency changes
+            database.ref('currency').on('value', (snapshot) => {
+                const currency = snapshot.val();
+                if (currency !== null && currency !== undefined) {
+                    currentCurrency = currency;
+                    document.getElementById('currency').value = currency;
+                    updateDisplay();
+                }
+            });
+            
+            // Listen for changes in the 'transactions' node for payment status
+            // This is the key for real-time payment confirmation
+            database.ref('transactions').on('child_changed', (snapshot) => {
+                const transactionData = snapshot.val();
+                const transactionId = snapshot.key;
+                if (transactionData && transactionData.status === 'success' && transactionId === currentTransactionId) {
+                    // This means the payment for the current QR code was successful
+                    showPaymentSuccess(transactionId);
+                }
+            });
+        }
+
+        // Update payment details
+        function updatePayment() {
+            if (!database) {
+                showError('Please connect to Firebase first');
+                return;
+            }
+
+            const amount = parseFloat(document.getElementById('amount').value);
+            const upiId = document.getElementById('upiId').value.trim();
+            const merchantName = document.getElementById('merchantName').value.trim();
+            const currency = document.getElementById('currency').value;
+
+            if (!amount || amount <= 0) {
+                showError('Please enter a valid amount');
+                return;
+            }
+
+            if (!upiId) {
+                showError('Please enter a UPI ID');
+                return;
+            }
+
+            if (!merchantName) {
+                showError('Please enter merchant name');
+                return;
+            }
+
+            // Update local variables
+            currentAmount = amount;
+            currentUPI = upiId;
+            currentMerchant = merchantName;
+            currentCurrency = currency;
+
+            // Update Firebase
+            const updates = {
+                paymentAmount: currentAmount,
+                upiId: currentUPI,
+                merchantName: currentMerchant,
+                currency: currentCurrency,
+                lastUpdated: new Date().toISOString()
+            };
+
+            database.ref().update(updates)
+                .then(() => {
+                    showSuccess('Payment details updated successfully!');
+                    updateDisplay();
+                })
+                .catch((error) => {
+                    showError('Update failed: ' + error.message);
+                });
+        }
+
+        // Generate QR Code with perfectly centered Bitcoin icon and proper UPI format
+        function generateQR() {
+            if (currentAmount <= 0) {
+                showError('Please set a valid amount first');
+                return;
+            }
+
+            if (!currentUPI) {
+                showError('Please set your UPI ID first');
+                return;
+            }
+
+            // Generate a unique transaction ID for each QR code
+            currentTransactionId = 'TXN' + Date.now() + Math.random().toString(36).substring(2, 8).toUpperCase();
+            
+            // Construct UPI payment URL with all recommended parameters
+            // pn: Payee Name (Merchant Name)
+            // pa: Payee Address (UPI ID)
+            // am: Amount
+            // cu: Currency
+            // mc: Merchant Category Code (example: 5411 for Groceries, 6011 for Banks. Use a generic one if unsure or omit if not critical)
+            // tid: Transaction ID (unique identifier)
+            // tr: Transaction Reference (same as tid for simplicity, or a merchant-specific ref)
+            // tn: Transaction Note/Description
+            // mode: 02 for collect (pull), 01 for pay (push). For QR, typically 02.
+            // purpose: 00 for bill payment, 01 for collection.
+            
+            const upiUrl = `upi://pay?pa=${currentUPI}&pn=${encodeURIComponent(currentMerchant)}&am=${currentAmount}&cu=${currentCurrency}&tn=${encodeURIComponent(`Payment for ${currentMerchant} - ${currentAmount}`)}&tr=${currentTransactionId}&mc=0000&tid=${currentTransactionId}&mode=02&purpose=00`;
+
+            // Clear previous QR code
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+
+            try {
+                // Create canvas for QR code
+                const canvas = document.createElement('canvas');
+                
+                // Generate QR code with higher error correction for icon overlay
+                const qr = new QRious({
+                    element: canvas,
+                    value: upiUrl,
+                    size: 320,
+                    padding: 20,
+                    background: 'white',
+                    foreground: '#1a73e8', // A blue color for QR code modules
+                    level: 'H' // Highest error correction for icon overlay
+                });
+
+                // Create wrapper div for positioning
+                const wrapper = document.createElement('div');
+                wrapper.style.position = 'relative';
+                wrapper.style.display = 'inline-block';
+                wrapper.style.margin = '0 auto';
+
+                // Add canvas to wrapper
+                wrapper.appendChild(canvas);
+
+                // Calculate exact center position based on canvas size
+                const canvasSize = 320;
+                const iconSize = 32; /* Smaller icon size for better fit */
+                const centerX = (canvasSize / 2) - (iconSize / 2);
+                const centerY = (canvasSize / 2) - (iconSize / 2);
+
+                // Create Bitcoin icon overlay with precise positioning
+                const iconContainer = document.createElement('div');
+                iconContainer.style.position = 'absolute';
+                iconContainer.style.left = `${centerX}px`;
+                iconContainer.style.top = `${centerY}px`;
+                iconContainer.style.width = `${iconSize}px`;
+                iconContainer.style.height = `${iconSize}px`;
+                iconContainer.style.backgroundColor = 'white';
+                iconContainer.style.borderRadius = '50%';
+                iconContainer.style.display = 'flex';
+                iconContainer.style.alignItems = 'center';
+                iconContainer.style.justifyContent = 'center';
+                iconContainer.style.border = '2px solid #1a73e8';
+                iconContainer.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.3)';
+                iconContainer.style.zIndex = '10';
+
+                // Add Bitcoin icon (using the embedded SVG from style)
+                const bitcoinIcon = document.createElement('span');
+                bitcoinIcon.className = 'bitcoin-icons--bitcoin-filled';
+                bitcoinIcon.style.fontSize = '18px'; /* Adjust size of icon within container */
+                bitcoinIcon.style.color = '#f7931a'; // Bitcoin orange
+                bitcoinIcon.style.lineHeight = '1'; /* Ensure vertical alignment */
+                
+                iconContainer.appendChild(bitcoinIcon);
+                wrapper.appendChild(iconContainer);
+
+                // Add to page
+                qrContainer.appendChild(wrapper);
+                
+                // Store transaction in Firebase
+                if (database) {
+                    database.ref(`transactions/${currentTransactionId}`).set({
+                        amount: currentAmount,
+                        upiId: currentUPI,
+                        merchant: currentMerchant,
+                        currency: currentCurrency,
+                        status: 'pending', // Initial status is pending
+                        createdAt: new Date().toISOString(),
+                        upiUrl: upiUrl
+                    });
+
+                    // We now listen for changes on 'transactions' node (child_changed event)
+                    // The `monitorPayment` function is simplified to just update display
+                    // and the `showPaymentSuccess` is triggered by the Firebase listener
+                    // as soon as the status changes to 'success'.
+                }
+                
+                updateDisplay();
+                showSuccess('Enhanced QR Code generated - Scan to Pay!');
+                
+            } catch (error) {
+                showError('QR Code generation failed: ' + error.message);
+            }
+        }
+
+        // Monitor payment status (now simplified, main listener is in setupRealtimeListeners)
+        function monitorPayment(transactionId) {
+            // This function is kept for clarity but its core real-time monitoring
+            // is now handled by the `child_changed` listener in `setupRealtimeListeners`.
+            // It's still good practice to have this if you want to explicitly
+            // attach a listener to *just this specific transaction*
+            // However, for a single page app like this, the global listener is sufficient.
+            console.log(`Monitoring transaction: ${transactionId}`);
+            // No need to set up `on('value')` listener here, it's already done globally.
+        }
+
+        // Show payment success popup
+        function showPaymentSuccess(transactionId) {
+            // Check if a popup is already active to prevent multiple popups
+            if (document.querySelector('.popup-overlay')) {
+                console.log('Popup already active, preventing duplicate.');
+                return;
+            }
+
+            // Update status on main display
+            document.getElementById('infoStatus').textContent = 'Payment Successful ✅';
+            document.getElementById('infoStatus').style.color = '#4CAF50';
+
+            // Create popup
+            const overlay = document.createElement('div');
+            overlay.className = 'popup-overlay';
+            // Clicking the overlay closes the popup
+            overlay.onclick = (e) => {
+                if (e.target === overlay) { // Ensure click is on overlay, not its children
+                    closePopup();
+                }
+            };
+
+            const popup = document.createElement('div');
+            popup.className = 'success-popup';
+            popup.innerHTML = `
+                <h2>🎉 Payment Successful!</h2>
+                <p><strong>Amount:</strong> ${currencySymbols[currentCurrency]}${currentAmount.toFixed(2)}</p>
+                <p><strong>Transaction ID:</strong> ${transactionId}</p>
+                <p><strong>UPI ID:</strong> ${currentUPI}</p>
+                <p><strong>Merchant:</strong> ${currentMerchant}</p>
+                <p>Thank you for your payment!</p>
+                <button class="close-btn" onclick="closePopup()">Close</button>
+            `;
+
+            overlay.appendChild(popup);
+            document.body.appendChild(overlay);
+
+            // Play success sound (ensure this path or base64 is valid if used)
+            try {
+                // Base64 encoded short success sound (a gentle ding)
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEcBzuN1Oq/cygD');
+                audio.play().catch(e => console.error("Audio play failed:", e));
+            } catch (e) {
+                console.error("Error creating audio object:", e);
+            }
+
+            // Update Firebase to 'completed' after showing popup to indicate it has been processed on frontend
+            if (database) {
+                database.ref(`transactions/${transactionId}`).update({
+                    status: 'completed',
+                    completedAt: new Date().toISOString()
+                }).catch(e => console.error("Firebase update to 'completed' failed:", e));
+            }
+        }
+
+        // Close popup
+        function closePopup() {
+            const overlay = document.querySelector('.popup-overlay');
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+
+        // Simulate payment for testing
+        function simulatePayment() {
+            if (!currentTransactionId) {
+                showError('Please generate a QR code first');
+                return;
+            }
+
+            if (database) {
+                // Simulate payment success by updating status in Firebase
+                // The global listener will then detect this change and trigger showPaymentSuccess
+                database.ref(`transactions/${currentTransactionId}`).update({
+                    status: 'success',
+                    simulatedPayment: true,
+                    completedAt: new Date().toISOString()
+                })
+                .then(() => showSuccess('Payment simulation triggered!'))
+                .catch(e => showError('Simulation failed: ' + e.message));
+            } else {
+                showError('Firebase not connected');
+            }
+        }
+
+        // Update display
+        function updateDisplay() {
+            const symbol = currencySymbols[currentCurrency] || '₹';
+            
+            document.getElementById('displayAmount').textContent = currentAmount.toFixed(2);
+            document.querySelector('.currency-symbol').textContent = symbol;
+            document.getElementById('infoUpiId').textContent = currentUPI || 'Not set';
+            document.getElementById('infoMerchant').textContent = currentMerchant || 'Not set';
+            document.getElementById('infoAmount').textContent = `${symbol}${currentAmount.toFixed(2)}`;
+            document.getElementById('infoTransactionId').textContent = currentTransactionId || 'Not generated';
+            
+            if (!currentTransactionId) {
+                document.getElementById('infoStatus').textContent = 'Ready';
+                document.getElementById('infoStatus').style.color = '#2c3e50';
+            }
+        }
+
+        // Update connection status
+        function updateConnectionStatus(connected) {
+            const statusElement = document.getElementById('connectionStatus');
+            if (connected) {
+                statusElement.className = 'status-card status-connected';
+                statusElement.innerHTML = '🟢 Connected to Firebase';
+            } else {
+                statusElement.className = 'status-card status-disconnected';
+                statusElement.innerHTML = '🔴 Not Connected to Firebase';
+            }
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            // Remove existing messages
+            const existing = document.querySelector('.success-message');
+            if (existing) existing.remove();
+
+            const div = document.createElement('div');
+            div.className = 'success-message';
+            div.textContent = '✅ ' + message;
+            
+            const container = document.querySelector('.admin-panel');
+            container.appendChild(div);
+            
+            setTimeout(() => {
+                if (div.parentNode) div.remove();
+            }, 3000);
+        }
+
+        // Show error message
+        function showError(message) {
+            // Remove existing messages
+            const existing = document.querySelector('.error-message');
+            if (existing) existing.remove();
+
+            const div = document.createElement('div');
+            div.className = 'error-message';
+            div.textContent = '❌ ' + message;
+            
+            const container = document.querySelector('.admin-panel');
+            container.appendChild(div);
+            
+            setTimeout(() => {
+                if (div.parentNode) div.remove();
+            }, 5000);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDisplay();
+            
+            // Add input event listeners
+            document.getElementById('currency').addEventListener('change', (e) => {
+                currentCurrency = e.target.value;
+                updateDisplay();
+            });
+
+            document.getElementById('amount').addEventListener('input', (e) => {
+                const amount = parseFloat(e.target.value);
+                if (amount > 0) {
+                    currentAmount = amount;
+                    updateDisplay();
+                }
+            });
+
+            document.getElementById('upiId').addEventListener('input', (e) => {
+                currentUPI = e.target.value;
+                updateDisplay();
+            });
+
+            document.getElementById('merchantName').addEventListener('input', (e) => {
+                currentMerchant = e.target.value;
+                updateDisplay();
+            });
+        });
+    </script>
+</body>
+</html>

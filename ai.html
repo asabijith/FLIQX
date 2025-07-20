@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Movie Expert - Professional Movie Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-bg: #0a0a0a;
+            --secondary-bg: #1a1a1a;
+            --card-bg: #242424;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --accent: #e50914;
+            --accent-hover: #f40612;
+            --ai-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --success: #22c55e;
+            --warning: #f59e0b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--primary-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: var(--secondary-bg);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: var(--ai-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--card-bg);
+            border-radius: 20px;
+            font-size: 0.875rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--warning);
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.active {
+            background: var(--success);
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1400px;
+            margin: 80px auto 2rem;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        /* Chat Section */
+        .chat-section {
+            background: var(--secondary-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+        }
+
+        .chat-header {
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #333;
+            margin-bottom: 1rem;
+        }
+
+        .chat-title {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .chat-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: var(--primary-bg);
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 3px;
+        }
+
+        .message {
+            display: flex;
+            gap: 0.75rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.2rem;
+        }
+
+        .user-message .message-avatar {
+            background: var(--accent);
+        }
+
+        .ai-message .message-avatar {
+            background: var(--ai-gradient);
+        }
+
+        .message-content {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            background: var(--card-bg);
+        }
+
+        .message-content h3 {
+            color: var(--accent);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .message-content ul {
+            list-style: none;
+            padding-left: 1rem;
+        }
+
+        .message-content li {
+            margin: 0.5rem 0;
+            position: relative;
+        }
+
+        .message-content li:before {
+            content: "▸";
+            position: absolute;
+            left: -1rem;
+            color: var(--accent);
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 0.3rem;
+            padding: 0.5rem;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        /* Input Section */
+        .chat-input-section {
+            padding-top: 1rem;
+            border-top: 1px solid #333;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid #444;
+            border-radius: 24px;
+            padding: 0.75rem 1.25rem;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: #2a2a2a;
+        }
+
+        .send-button {
+            background: var(--accent);
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .send-button:hover {
+            background: var(--accent-hover);
+            transform: scale(1.05);
+        }
+
+        .send-button:active {
+            transform: scale(0.95);
+        }
+
+        /* Quick Prompts */
+        .quick-prompts {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .prompt-chip {
+            background: var(--card-bg);
+            border: 1px solid #444;
+            border-radius: 20px;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .prompt-chip:hover {
+            border-color: var(--accent);
+            background: #2a2a2a;
+        }
+
+        /* Movies Display Section */
+        .movies-section {
+            background: var(--secondary-bg);
+            border-radius: 12px;
+            padding: 1.5rem;
+            overflow-y: auto;
+            height: calc(100vh - 120px);
+        }
+
+        .movies-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .movie-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+
+        .movie-poster {
+            width: 100%;
+            aspect-ratio: 2/3;
+            object-fit: cover;
+            background: #333;
+        }
+
+        .movie-info {
+            padding: 0.75rem;
+        }
+
+        .movie-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .movie-year {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        .movie-rating {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: rgba(0,0,0,0.8);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .movie-rating .star {
+            color: #fbbf24;
+        }
+
+        /* Category Section */
+        .category-section {
+            margin-top: 2rem;
+        }
+
+        .category-title {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .category-icon {
+            background: var(--ai-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Loading State */
+        .loading-skeleton {
+            background: linear-gradient(90deg, #333 25%, #444 50%, #333 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Movie Details Modal */
+        .movie-details-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            overflow-y: auto;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .movie-details-modal.active {
+            display: block;
+        }
+
+        .modal-content {
+            position: relative;
+            max-width: 1200px;
+            margin: 2rem auto;
+            background: var(--secondary-bg);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 2rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            z-index: 10;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: rgba(0, 0, 0, 0.8);
+            transform: rotate(90deg);
+        }
+
+        .modal-backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 300px;
+            background-size: cover;
+            background-position: center;
+            filter: brightness(0.3);
+            z-index: 0;
+        }
+
+        .modal-backdrop::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(to bottom, transparent, var(--secondary-bg));
+        }
+
+        .modal-info {
+            position: relative;
+            display: flex;
+            gap: 2rem;
+            padding: 2rem;
+            z-index: 1;
+        }
+
+        .modal-poster {
+            flex-shrink: 0;
+        }
+
+        .modal-poster img {
+            width: 300px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-details {
+            flex: 1;
+            padding-top: 100px;
+        }
+
+        #modalTitle {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .modal-meta {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .modal-rating {
+            color: #fbbf24;
+        }
+
+        .modal-genres {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .genre-chip {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+        }
+
+        .modal-overview {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .modal-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn.primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .modal-btn.primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        .modal-btn.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .modal-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .chat-section, .movies-section {
+                height: 500px;
+            }
+
+            .modal-info {
+                flex-direction: column;
+                padding-top: 150px;
+            }
+
+            .modal-details {
+                padding-top: 0;
+            }
+
+            .modal-poster img {
+                width: 200px;
+                margin: 0 auto;
+                display: block;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                padding: 0 1rem;
+            }
+            
+            .main-container {
+                padding: 1rem;
+                margin-top: 70px;
+            }
+            
+            .movies-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+            
+            .quick-prompts {
+                display: none;
+            }
+
+            .modal-content {
+                margin: 0;
+                border-radius: 0;
+                height: 100vh;
+                overflow-y: auto;
+            }
+
+            #modalTitle {
+                font-size: 1.8rem;
+            }
+
+            .modal-actions {
+                flex-direction: column;
+            }
+
+            .modal-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1 class="logo">🎬 AI Movie Expert</h1>
+            <div class="api-status">
+                <span class="status-dot" id="apiStatus"></span>
+                <span id="apiStatusText">Connecting...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Chat Section -->
+        <section class="chat-section">
+            <div class="chat-header">
+                <h2 class="chat-title">Movie Assistant</h2>
+                <p class="chat-subtitle">Ask me anything about movies - recommendations, plot explanations, similar films, or any movie-related questions!</p>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message ai-message">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <p>Hello! I'm your AI Movie Expert. I can help you with:</p>
+                        <ul>
+                            <li>Movie recommendations by genre, mood, or theme</li>
+                            <li>Similar movies to ones you've enjoyed</li>
+                            <li>Plot explanations and movie details</li>
+                            <li>Finding movies by describing scenes</li>
+                            <li>Current trending and popular movies</li>
+                        </ul>
+                        <p>What would you like to know about movies today?</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-section">
+                <div class="chat-input-container">
+                    <input type="text" 
+                           class="chat-input" 
+                           id="chatInput" 
+                           placeholder="Ask about any movie or get recommendations..."
+                           autocomplete="off">
+                    <button class="send-button" id="sendButton">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="quick-prompts">
+                    <div class="prompt-chip" onclick="sendQuickPrompt('Best sci-fi movies like Interstellar')">Sci-fi like Interstellar</div>
+                    <div class="prompt-chip" onclick="sendQuickPrompt('Top horror movies of 2024')">Horror 2024</div>
+                    <div class="prompt-chip" onclick="sendQuickPrompt('Feel-good comedy recommendations')">Feel-good comedies</div>
+                    <div class="prompt-chip" onclick="sendQuickPrompt('Movies with plot twists')">Plot twists</div>
+                    <div class="prompt-chip" onclick="sendQuickPrompt('Trending movies this week')">Trending now</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Movies Display Section -->
+        <section class="movies-section">
+            <div class="movies-header">
+                <h2>Recommended Movies</h2>
+            </div>
+            <div id="moviesContainer">
+                <div class="category-section">
+                    <h3 class="category-title">
+                        <span class="category-icon">✨</span>
+                        <span>Waiting for your query...</span>
+                    </h3>
+                    <div class="movies-grid" id="moviesGrid">
+                        <!-- Movies will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Movie Details Modal -->
+    <div id="movieDetailsModal" class="movie-details-modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeDetailsModal()">&times;</span>
+            <div class="modal-body">
+                <div class="modal-backdrop" id="modalBackdrop"></div>
+                <div class="modal-info">
+                    <div class="modal-poster">
+                        <img id="modalPoster" src="" alt="">
+                    </div>
+                    <div class="modal-details">
+                        <h2 id="modalTitle"></h2>
+                        <div class="modal-meta">
+                            <span id="modalYear"></span>
+                            <span id="modalRuntime"></span>
+                            <span class="modal-rating">
+                                ★ <span id="modalRating"></span>
+                            </span>
+                        </div>
+                        <div id="modalGenres" class="modal-genres"></div>
+                        <p id="modalOverview" class="modal-overview"></p>
+                        <div class="modal-actions">
+                            <button class="modal-btn primary" onclick="playMovieTrailer()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                                Watch Trailer
+                            </button>
+                            <button class="modal-btn secondary" onclick="openFullDetails()">
+                                View Full Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const CONFIG = {
+            GEMINI_API_KEY: 'AIzaSyCmNful5YL4jLcCcYKf_I2ux1Qt0TUhVAw', // Replace with your API key
+            TMDB_API_KEY: '4f87c7ab385a4bab29e9195d359732e5', // Replace with your API key
+            TMDB_BASE_URL: 'https://api.themoviedb.org/3',
+            TMDB_IMG_BASE: 'https://image.tmdb.org/t/p/w500'
+        };
+
+        // State management
+        let isLoading = false;
+        let currentMovies = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeChat();
+            checkAPIStatus();
+        });
+
+        // Initialize chat functionality
+        function initializeChat() {
+            const chatInput = document.getElementById('chatInput');
+            const sendButton = document.getElementById('sendButton');
+
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            sendButton.addEventListener('click', sendMessage);
+        }
+
+        // Check API status
+        async function checkAPIStatus() {
+            try {
+                const response = await callGeminiAPI('test connection');
+                if (response.success) {
+                    updateAPIStatus(true);
+                } else {
+                    updateAPIStatus(false);
+                }
+            } catch (error) {
+                updateAPIStatus(false);
+            }
+        }
+
+        // Update API status indicator
+        function updateAPIStatus(isActive) {
+            const statusDot = document.getElementById('apiStatus');
+            const statusText = document.getElementById('apiStatusText');
+            
+            if (isActive) {
+                statusDot.classList.add('active');
+                statusText.textContent = 'Connected';
+            } else {
+                statusDot.classList.remove('active');
+                statusText.textContent = 'Connection Error';
+            }
+        }
+
+        // Send message
+        async function sendMessage() {
+            const chatInput = document.getElementById('chatInput');
+            const message = chatInput.value.trim();
+            
+            if (!message || isLoading) return;
+            
+            isLoading = true;
+            chatInput.value = '';
+            
+            // Add user message
+            addMessage(message, 'user');
+            showTypingIndicator();
+            
+            try {
+                // Call Gemini API
+                const response = await callGeminiAPI(message);
+                
+                removeTypingIndicator();
+                
+                if (response.success) {
+                    // Add AI response
+                    addMessage(response.text, 'ai');
+                    
+                    // Extract and display movies
+                    if (response.movies && response.movies.length > 0) {
+                        await displayMovies(response.movies, response.categoryTitle || 'Recommended Movies');
+                    }
+                } else {
+                    addMessage('I apologize, but I encountered an error. Please try again.', 'ai');
+                }
+            } catch (error) {
+                removeTypingIndicator();
+                console.error('Error:', error);
+                addMessage('Something went wrong. Please try again later.', 'ai');
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        // Call Gemini API
+        async function callGeminiAPI(userQuery) {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${CONFIG.GEMINI_API_KEY}`;
+            
+            const prompt = `You are an expert movie consultant AI. Respond to this query: "${userQuery}"
+
+IMPORTANT INSTRUCTIONS:
+1. Provide a helpful, conversational response about movies
+2. When recommending movies, include a variety from different categories
+3. Format your response with clear sections and bullet points where appropriate
+4. Always include specific movie titles with release years
+
+Response format:
+- Start with a brief, friendly acknowledgment of their request
+- Provide detailed information or recommendations
+- For movie recommendations, organize by category (e.g., "Classic Picks", "Recent Releases", "Hidden Gems")
+- Include 6-10 specific movie recommendations with years
+- End with a helpful closing statement
+
+For movie mentions, use this format: **Movie Title (Year)**
+
+Categories to consider based on the query:
+- Genre-specific (Action, Comedy, Drama, Horror, Sci-Fi, Romance, etc.)
+- Mood-based (Feel-good, Intense, Thought-provoking, etc.)
+- Theme-based (Time travel, AI, Family, Adventure, etc.)
+- Era-based (Classic, Modern, Recent releases)
+
+User query: "${userQuery}"`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }],
+                        generationConfig: {
+                            temperature: 0.8,
+                            topK: 40,
+                            topP: 0.95,
+                            maxOutputTokens: 2048
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (!text) {
+                    throw new Error('No response text');
+                }
+
+                // Format and extract movies
+                const formattedText = formatResponseText(text);
+                const movies = extractMoviesFromText(text);
+                const categoryTitle = extractCategoryTitle(text);
+
+                return {
+                    success: true,
+                    text: formattedText,
+                    movies: movies,
+                    categoryTitle: categoryTitle
+                };
+
+            } catch (error) {
+                console.error('Gemini API Error:', error);
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        // Format response text
+        function formatResponseText(text) {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>')
+                .replace(/^/, '<p>')
+                .replace(/$/, '</p>')
+                .replace(/•/g, '▸');
+        }
+
+        // Extract movies from text
+        function extractMoviesFromText(text) {
+            const movies = [];
+            const patterns = [
+                /\*\*([^*]+?)\s*\((\d{4})\)\*\*/g,
+                /([A-Z][^(\n]+?)\s*\((\d{4})\)/g
+            ];
+            
+            const foundTitles = new Set();
+            
+            patterns.forEach(pattern => {
+                let match;
+                while ((match = pattern.exec(text)) !== null) {
+                    const title = match[1].trim().replace(/[*"]/g, '');
+                    const year = parseInt(match[2]);
+                    
+                    if (title.length > 2 && 
+                        year > 1900 && 
+                        year <= new Date().getFullYear() + 1 &&
+                        !foundTitles.has(title.toLowerCase())) {
+                        
+                        movies.push({ title, year });
+                        foundTitles.add(title.toLowerCase());
+                    }
+                }
+            });
+            
+            return movies.slice(0, 10); // Limit to 10 movies
+        }
+
+        // Extract category title
+        function extractCategoryTitle(text) {
+            const categoryMatch = text.match(/(?:Category|Type|Genre):\s*([^\n]+)/i);
+            return categoryMatch ? categoryMatch[1].trim() : 'Recommended Movies';
+        }
+
+        // Display movies
+        async function displayMovies(moviesList, categoryTitle) {
+            const moviesContainer = document.getElementById('moviesContainer');
+            
+            moviesContainer.innerHTML = `
+                <div class="category-section">
+                    <h3 class="category-title">
+                        <span class="category-icon">🎬</span>
+                        <span>${categoryTitle}</span>
+                    </h3>
+                    <div class="movies-grid" id="moviesGrid">
+                        ${generateLoadingSkeletons(6)}
+                    </div>
+                </div>
+            `;
+            
+            const moviesGrid = document.getElementById('moviesGrid');
+            const tmdbMovies = [];
+            
+            // Search for each movie in TMDB
+            for (const movie of moviesList) {
+                try {
+                    const searchResult = await searchTMDB(movie.title, movie.year);
+                    if (searchResult) {
+                        tmdbMovies.push(searchResult);
+                    }
+                } catch (error) {
+                    console.error(`Error searching for ${movie.title}:`, error);
+                }
+            }
+            
+            // Display the found movies
+            if (tmdbMovies.length > 0) {
+                moviesGrid.innerHTML = tmdbMovies.map(movie => createMovieCard(movie)).join('');
+            } else {
+                moviesGrid.innerHTML = '<p style="color: var(--text-secondary); text-align: center; grid-column: 1/-1;">No movies found. Try a different search.</p>';
+            }
+        }
+
+        // Search TMDB
+        async function searchTMDB(title, year) {
+            const searchUrl = `${CONFIG.TMDB_BASE_URL}/search/movie?api_key=${CONFIG.TMDB_API_KEY}&query=${encodeURIComponent(title)}`;
+            
+            try {
+                const response = await fetch(searchUrl);
+                const data = await response.json();
+                
+                if (data.results && data.results.length > 0) {
+                    // Try to find exact year match or closest
+                    let bestMatch = data.results[0];
+                    
+                    if (year) {
+                        const yearMatch = data.results.find(movie => {
+                            const releaseYear = movie.release_date ? parseInt(movie.release_date.split('-')[0]) : 0;
+                            return Math.abs(releaseYear - year) <= 1;
+                        });
+                        
+                        if (yearMatch) {
+                            bestMatch = yearMatch;
+                        }
+                    }
+                    
+                    return bestMatch;
+                }
+                
+                return null;
+            } catch (error) {
+                console.error('TMDB search error:', error);
+                return null;
+            }
+        }
+
+        // Create movie card HTML
+        function createMovieCard(movie) {
+            const posterUrl = movie.poster_path 
+                ? `${CONFIG.TMDB_IMG_BASE}${movie.poster_path}` 
+                : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQ1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQ1MCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+Tm8gUG9zdGVyPC90ZXh0Pjwvc3ZnPg==';
+            
+            const year = movie.release_date ? movie.release_date.split('-')[0] : 'N/A';
+            const rating = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
+            
+            return `
+                <div class="movie-card" onclick="viewMovieDetails(${movie.id})">
+                    <img src="${posterUrl}" alt="${movie.title}" class="movie-poster" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQ1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQ1MCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+Tm8gUG9zdGVyPC90ZXh0Pjwvc3ZnPg=='">
+                    <div class="movie-rating">
+                        <span class="star">★</span>
+                        <span>${rating}</span>
+                    </div>
+                    <div class="movie-info">
+                        <h4 class="movie-title">${movie.title}</h4>
+                        <p class="movie-year">${year}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Generate loading skeletons
+        function generateLoadingSkeletons(count) {
+            return Array(count).fill('').map(() => `
+                <div class="movie-card">
+                    <div class="loading-skeleton" style="height: 225px;"></div>
+                    <div class="movie-info">
+                        <div class="loading-skeleton" style="height: 16px; margin-bottom: 0.5rem;"></div>
+                        <div class="loading-skeleton" style="height: 12px; width: 60%;"></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Add message to chat
+        function addMessage(text, sender) {
+            const chatMessages = document.getElementById('chatMessages');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            const avatar = sender === 'user' ? '👤' : '🤖';
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">${text}</div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            const chatMessages = document.getElementById('chatMessages');
+            
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message ai-message typing-message';
+            typingDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Remove typing indicator
+        function removeTypingIndicator() {
+            const typingMessage = document.querySelector('.typing-message');
+            if (typingMessage) {
+                typingMessage.remove();
+            }
+        }
+
+        // Send quick prompt
+        function sendQuickPrompt(prompt) {
+            const chatInput = document.getElementById('chatInput');
+            chatInput.value = prompt;
+            sendMessage();
+        }
+
+        // View movie details - navigate to details page
+        function viewMovieDetails(movieId) {
+            if (movieId) {
+                // You can choose either modal or navigation
+                // Option 1: Open modal (uncomment the line below)
+                // showMovieDetailsModal(movieId);
+                
+                // Option 2: Navigate to details page (default)
+                window.location.href = `details.html?id=${movieId}`;
+            }
+        }
+
+        // Show movie details in modal
+        async function showMovieDetailsModal(movieId) {
+            const modal = document.getElementById('movieDetailsModal');
+            modal.classList.add('active');
+            
+            // Show loading state
+            document.getElementById('modalTitle').textContent = 'Loading...';
+            document.getElementById('modalOverview').textContent = 'Please wait...';
+            
+            try {
+                // Fetch movie details
+                const url = `${CONFIG.TMDB_BASE_URL}/movie/${movieId}?api_key=${CONFIG.TMDB_API_KEY}&append_to_response=credits,videos`;
+                const response = await fetch(url);
+                const movie = await response.json();
+                
+                // Update modal with movie data
+                updateModalContent(movie);
+                
+                // Store current movie for trailer playback
+                window.currentMovie = movie;
+                
+            } catch (error) {
+                console.error('Error fetching movie details:', error);
+                document.getElementById('modalTitle').textContent = 'Error loading movie details';
+                document.getElementById('modalOverview').textContent = 'Please try again later.';
+            }
+        }
+
+        // Update modal content with movie data
+        function updateModalContent(movie) {
+            // Backdrop
+            const backdrop = document.getElementById('modalBackdrop');
+            if (movie.backdrop_path) {
+                backdrop.style.backgroundImage = `url(${CONFIG.TMDB_IMG_BASE.replace('w500', 'original')}${movie.backdrop_path})`;
+            }
+            
+            // Poster
+            const poster = document.getElementById('modalPoster');
+            poster.src = movie.poster_path 
+                ? `${CONFIG.TMDB_IMG_BASE}${movie.poster_path}`
+                : 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQ1MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjQ1MCIgZmlsbD0iIzMzMyIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiI+Tm8gUG9zdGVyPC90ZXh0Pjwvc3ZnPg==';
+            poster.alt = movie.title;
+            
+            // Basic info
+            document.getElementById('modalTitle').textContent = movie.title;
+            document.getElementById('modalYear').textContent = movie.release_date ? movie.release_date.split('-')[0] : 'N/A';
+            document.getElementById('modalRuntime').textContent = movie.runtime ? `${movie.runtime} min` : '';
+            document.getElementById('modalRating').textContent = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
+            document.getElementById('modalOverview').textContent = movie.overview || 'No overview available.';
+            
+            // Genres
+            const genresContainer = document.getElementById('modalGenres');
+            genresContainer.innerHTML = '';
+            if (movie.genres && movie.genres.length > 0) {
+                movie.genres.forEach(genre => {
+                    const chip = document.createElement('span');
+                    chip.className = 'genre-chip';
+                    chip.textContent = genre.name;
+                    genresContainer.appendChild(chip);
+                });
+            }
+        }
+
+        // Close details modal
+        function closeDetailsModal() {
+            const modal = document.getElementById('movieDetailsModal');
+            modal.classList.remove('active');
+            window.currentMovie = null;
+        }
+
+        // Play movie trailer
+        async function playMovieTrailer() {
+            if (!window.currentMovie) return;
+            
+            const movie = window.currentMovie;
+            const videos = movie.videos?.results || [];
+            const trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube') || videos[0];
+            
+            if (trailer && trailer.key) {
+                window.open(`https://www.youtube.com/watch?v=${trailer.key}`, '_blank');
+            } else {
+                alert('No trailer available for this movie.');
+            }
+        }
+
+        // Open full details page
+        function openFullDetails() {
+            if (window.currentMovie) {
+                window.location.href = `details.html?id=${window.currentMovie.id}`;
+            }
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeDetailsModal();
+            }
+        });
+
+        // Close modal on background click
+        document.getElementById('movieDetailsModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                closeDetailsModal();
+            }
+        });
+
+        // Error handling
+        window.addEventListener('error', (e) => {
+            console.error('Global error:', e);
+        });
+
+        // Initialize with a welcome search
+        setTimeout(() => {
+            sendQuickPrompt('What are the most popular movies right now?');
+        }, 1500);
+    </script>
+</body>
+</html>

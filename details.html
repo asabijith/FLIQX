@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Details - CinemaStream</title>
+    <link rel="stylesheet" href="details.css">
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <!-- Updated Firebase scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="api.js"></script>
+    <script src="details.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="nav-logo">CinemaStream</div>
+                <ul class="nav-menu">
+                    <li><a href="home.html">Home</a></li>
+                    <li><a href="upcoming.html">Upcoming</a></li>
+                    <li><a href="series.html">Series</a></li>
+                    <li><a href="kids.html">Kids</a></li>
+                    <li><a href="ai-finder.html">AI Movie Finder</a></li>
+                    <li><a href="ai-poster.html">AI Poster Generate</a></li>
+                </ul>
+            </div>
+            <div class="nav-right">
+                <div class="search-box">
+                    <input type="text" placeholder="Search movies...">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="profile-menu" onclick="api.toggleProfileMenu()">
+                    <img id="navProfilePic" src="https://placehold.co/150x150/000/fff?text=User" alt="Profile">
+                    <div id="profileDropdown" class="profile-dropdown">
+                        <div class="profile-info">
+                            <img id="dropdownProfilePic" src="https://placehold.co/150x150/000/fff?text=User" alt="Profile">
+                            <span id="username">User</span>
+                            <span id="userEmail">email@example.com</span>
+                        </div>
+                        <a href="#" onclick="api.logout()">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="movie-hero">
+        <div id="heroBackdrop" class="hero-backdrop"></div>
+        <div class="hero-content">
+            <div class="movie-poster">
+                <img id="moviePoster" src="https://placehold.co/500x750/000/fff?text=Poster" alt="Movie Poster">
+            </div>
+            <div class="movie-details">
+                <h1 id="movieTitle">Movie Title</h1>
+                <div class="movie-meta">
+                    <span id="movieYear">2023</span>
+                    <span id="movieRuntime">120 min</span>
+                    <span class="rating">
+                        <i class="fas fa-star"></i>
+                        <span id="movieRating">8.0</span>
+                    </span>
+                </div>
+                <div id="movieGenres" class="genres"></div>
+                <p id="movieOverview">Movie overview goes here...</p>
+                <div class="action-buttons">
+                    <button id="playTrailer" class="btn btn-play"><i class="fas fa-play"></i> Play Trailer</button>
+                    <button id="spotifyBtn" class="btn btn-spotify"><i class="fab fa-spotify"></i> Soundtrack</button>
+                    <button id="reviewsBtn" class="btn btn-reviews"><i class="fas fa-star"></i> Reviews</button>
+                    <button id="aiAnalyzeBtn" class="btn btn-ai"><i class="fas fa-brain"></i> AI Analyze</button>
+                    <button id="addReviewBtn" class="btn btn-add-review"><i class="fas fa-pencil-alt"></i> Add Your Review</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cast-section">
+        <h2 class="section-title">Cast</h2>
+        <div id="castCarousel" class="cast-carousel"></div>
+    </section>
+
+    <section id="aiAnalysisSection" class="ai-analysis-section" style="display: none;">
+        <h2 class="section-title">AI Suitability Analysis</h2>
+        <div id="aiAnalysisContent" class="ai-analysis-content"></div>
+    </section>
+
+    <section id="soundtrackSection" class="soundtrack-section" style="display: none;">
+        <h2 class="section-title">Soundtrack</h2>
+        <div id="soundtrackList" class="soundtrack-list"></div>
+    </section>
+
+    <section id="reviewsSection" class="reviews-section" style="display: none;">
+        <h2 class="section-title">Movie Reviews (from YouTube)</h2>
+        <div id="reviewsList" class="reviews-list"></div>
+    </section>
+
+    <!-- User Reviews Section -->
+    <section id="userReviewsSection" class="user-reviews-section">
+        <h2 class="section-title">User Reviews</h2>
+        <div id="reviewFormContainer" style="display: none;">
+            <h3>Write Your Review</h3>
+            <textarea id="reviewTextarea" placeholder="Share your thoughts on the movie..."></textarea>
+            <button id="submitReviewBtn" class="btn">Submit Review</button>
+            <button id="cancelReviewBtn" class="btn" style="background: #6c757d; margin-left: 10px;">Cancel</button>
+        </div>
+        <div id="userReviewsList">
+            <!-- Firestore reviews will be loaded here -->
+        </div>
+    </section>
+
+    <section class="similar-section">
+        <h2 class="section-title">Similar Movies</h2>
+        <div id="similarMovies" class="movie-carousel"></div>
+    </section>
+
+    <div class="video-modal">
+        <div class="video-container">
+            <div id="player"></div>
+            <i class="fas fa-times close-video" onclick="api.closeVideo()"></i>
+        </div>
+    </div>
+
+    <div class="reviews-modal">
+        <div class="reviews-video-container">
+            <div id="reviewsPlayer"></div>
+            <i class="fas fa-times close-reviews-video" onclick="api.closeReviewsVideo()"></i>
+        </div>
+    </div>
+</body>
+</html>
