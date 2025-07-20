@@ -12,7 +12,7 @@ FLIQX  ( A AI BASED MOVIE DATA BASE )
 
 * **Track:** [e.g., Healthcare, FinTech, AI/ML, Web Development]
 * **Problem Statement:**
-    > OUTDATED OF IMBD
+    > OUTDATED OF IMBD and Full Details Of Movies 
 * **Solution:**
     > CREATING A AI INTEGRATED MOVIE DATABASE
 
