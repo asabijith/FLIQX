@@ -1,5 +1,5 @@
 # Project Title
-FLIQX
+FLIQX  ( A AI BASED MOVIE DATA BASE )
 ---
 
 ## Basic Details
@@ -9,7 +9,7 @@ FLIQX
     * [ABIJITH A S]
     * [ANANDHU KRISHNA S]
 
-    * ...
+
 * **Track:** [e.g., Healthcare, FinTech, AI/ML, Web Development]
 * **Problem Statement:**
     > OUTDATED OF IMBD
