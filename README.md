@@ -94,8 +94,8 @@ List the primary technologies, frameworks, and libraries you used to build your 
 * **FLIQX KIDS**
    ![Homepage Screenshot](https://dl.dropbox.com/scl/fi/zuntwjeps1b6ao49hmppy/Screenshot-2025-07-20-133606.png?rlkey=f3k51r8nzpgz99dhbmkjav4ir&st=zlbk6843&dl=0)
 
-  * **AI movie poster creator**
-   ![Homepage Screenshot](https://www.dropbox.com/scl/fi/lg5cu5y95t801tq3z04zm/Screenshot-2025-07-20-133651.png?rlkey=q0nmb24gwd6kz9a9hfi9y8q7m&st=nx0ndhlq&dl=0)
+* **AI movie poster creator**
+   ![Homepage Screenshot](https://dl.dropbox.com/scl/fi/lg5cu5y95t801tq3z04zm/Screenshot-2025-07-20-133651.png?rlkey=q0nmb24gwd6kz9a9hfi9y8q7m&st=nx0ndhlq&dl=0)
 
 * **AI MOVIE ASSISTANT**
    ![Homepage Screenshot](https://dl.dropbox.com/scl/fi/84rq8ow2acwywywrjxtvz/Screenshot-2025-07-20-133631.png?rlkey=y7coqdnihb121h8ju89licogw&st=z9wziifs&dl=0)
